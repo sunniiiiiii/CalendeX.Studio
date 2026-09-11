@@ -24,7 +24,7 @@ export default function FileUpload({ onParsed, onError }) {
       const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
       setStage('Reading timetable with AI…');
       const res = await base44.functions.invoke('parseTimetable', { file_url });
-      onParsed?.(res.data?.events || []);
+      onParsed?.(res.data?.events || [], file_url);
     } catch (err) {
       onError?.(err?.message || 'Failed to read the timetable. Please try again.');
     } finally {

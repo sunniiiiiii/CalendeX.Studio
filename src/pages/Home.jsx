@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import FileUpload from '@/components/FileUpload';
 import EventBlock from '@/components/EventBlock';
-import CalendarPeriod from '@/components/CalendarPeriod';
+import CalendarModeChooser from '@/components/CalendarModeChooser';
 import { buildIcs, downloadIcs } from '@/lib/ics';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -25,18 +26,20 @@ function normalizeEvent(ev, index) {
 export default function Home() {
   const { toast } = useToast();
   const [events, setEvents] = useState([]);
+  const [mode, setMode] = useState('specific');
   const [period, setPeriod] = useState({ start: '', end: '' });
   const [hasParsed, setHasParsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [lastFileUrl, setLastFileUrl] = useState('');
 
   const keptEvents = events.filter((e) => e.included);
-  const hasRecurring = keptEvents.some((e) => !e.start && e.day_of_week);
-  const hasDetailed = keptEvents.some((e) => e.start);
-  const exportableEvents = keptEvents.filter(
-    (e) => e.start || (e.day_of_week && e.start_time && period.start && period.end)
-  );
+  const exportableEvents = mode === 'recurring'
+    ? keptEvents.filter((e) => e.start || (e.day_of_week && e.start_time && period.start && period.end))
+    : keptEvents.filter((e) => e.start);
 
-  function handleParsed(rawEvents) {
+  function handleParsed(rawEvents, fileUrl) {
+    if (fileUrl) setLastFileUrl(fileUrl);
     if (!rawEvents || rawEvents.length === 0) {
       toast({ title: 'No events found', description: 'No timetable events could be detected in the file.' });
       setHasParsed(true);
@@ -71,7 +74,30 @@ export default function Home() {
   function reset() {
     setEvents([]);
     setPeriod({ start: '', end: '' });
+    setLastFileUrl('');
     setHasParsed(false);
+  }
+
+  async function regenerate() {
+    if (!lastFileUrl || isRegenerating) return;
+    setIsRegenerating(true);
+    try {
+      const res = await base44.functions.invoke('parseTimetable', { file_url: lastFileUrl });
+      const rawEvents = res.data?.events || [];
+      setEvents(rawEvents.map(normalizeEvent));
+      toast({
+        title: 'Re-extracted',
+        description: `${rawEvents.length} event${rawEvents.length === 1 ? '' : 's'} re-read from your file.`,
+      });
+    } catch (err) {
+      toast({
+        title: 'Regenerate failed',
+        description: err?.message || 'Could not re-read the file.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
   }
 
   function handleGenerate() {
@@ -141,6 +167,8 @@ export default function Home() {
               </p>
             </div>
 
+            <CalendarModeChooser mode={mode} period={period} onModeChange={setMode} onPeriodChange={setPeriod} />
+
             <FileUpload onParsed={handleParsed} onError={(msg) => toast({ title: 'Upload error', description: msg, variant: 'destructive' })} />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
@@ -169,23 +197,23 @@ export default function Home() {
                   {exportableEvents.length} ready to export
                 </p>
               </div>
-              <button
-              onClick={handleGenerate}
-              disabled={isGenerating || exportableEvents.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              
-                <Download className="w-4 h-4" />
-                Generate ICS file
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={regenerate}
+                  disabled={isRegenerating || !lastFileUrl}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <RefreshCw className={['w-4 h-4', isRegenerating ? 'animate-spin' : ''].join(' ')} />
+                  <span className="hidden sm:inline">{isRegenerating ? 'Regenerating…' : 'Regenerate'}</span>
+                </button>
+                <button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || exportableEvents.length === 0}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Download className="w-4 h-4" />
+                  Generate ICS file
+                </button>
+              </div>
             </div>
-
-            <CalendarPeriod
-              period={period}
-              onChange={setPeriod}
-              hasRecurring={hasRecurring}
-              hasDetailed={hasDetailed}
-              eventCount={events.length}
-            />
 
             {events.length === 0 ?
           <div className="rounded-2xl border border-border bg-card p-10 text-center">

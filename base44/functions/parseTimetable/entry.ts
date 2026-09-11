@@ -11,7 +11,9 @@ For each event extract:
 - start_time: the start time in 24h HH:MM format (e.g. "09:00") when a time is given. Empty string if none.
 - end_time: the end time in 24h HH:MM format (e.g. "10:30") when a time is given. Empty string if none.
 - location: the room / building / venue / address as written. Empty string if none.
-- notes: any additional descriptive details from the source for this event. IMPORTANT: scan the notes / remarks / comments / footnote areas for date and time information FIRST — if a concrete date or time appears there, use it to fill start/end/start_time/end_time, and only put the remaining descriptive text here. Empty string if none.
+- notes: any remaining descriptive details from the source for this event, AFTER all date/time data has been extracted into the proper fields. Empty string if none.
+
+IMPORTANT — TIMES OFTEN LIVE ONLY IN NOTES: Frequently start_time/end_time and day_of_week are NOT in a dedicated column but appear only inside notes, remarks, or comments — e.g. "every Tuesday 10 to 11:20", "Mon 9:00-10:30", "Wed/Fri 14:00-15:30", "Lectures: MWF 8:00-9:30". You MUST parse these patterns and populate day_of_week, start_time, and end_time from them. Convert times to 24h HH:MM (10:00, 11:20, 14:00). Convert day names to full or slash form (Tuesday, Mon/Wed/Fri). Scan EVERY event's notes/remarks for such patterns, not just the first. Only after extracting all date/time data into the proper fields should you store whatever descriptive text is left in notes.
 
 STRICT RULES:
 - Do NOT invent, guess, or fabricate any data. Only extract what is actually written in the document.
@@ -58,7 +60,7 @@ export default async function(req: Request): Promise<Response> {
       prompt: PROMPT,
       file_urls: [fileUrl],
       response_json_schema: SCHEMA,
-      model: 'gemini_3_8_flash'
+      model: 'gemini_3_flash'
     });
 
     const events = Array.isArray(result?.events) ? result.events : [];
