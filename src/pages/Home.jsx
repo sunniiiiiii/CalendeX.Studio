@@ -136,7 +136,7 @@ export default function Home() {
               <CalendarClock className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-semibold text-foreground leading-none">TimeEx by Sunni Yang</h1>
+              <h1 className="text-base font-semibold text-foreground leading-none">CalendeX</h1>
               <p className="text-xs text-muted-foreground mt-0.5">PDF / image → Apple Calendar</p>
             </div>
           </div>
