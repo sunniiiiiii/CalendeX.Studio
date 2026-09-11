@@ -122,7 +122,7 @@ export default function Home() {
                 <Sparkles className="w-3.5 h-3.5" />
                 AI-powered extraction
               </div>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">Turn Any Timetable into Calendar events将
+              <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">Turn Any Timetable into Calendar Events
 
             </h2>
               <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
