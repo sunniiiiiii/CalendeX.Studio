@@ -36,9 +36,9 @@ export default function Home() {
   const [lastFileUrl, setLastFileUrl] = useState('');
 
   const keptEvents = events.filter((e) => e.included);
-  const exportableEvents = mode === 'recurring'
-    ? keptEvents.filter((e) => e.start || (e.day_of_week && e.start_time && period.start && period.end))
-    : keptEvents.filter((e) => e.start);
+  const exportableEvents = mode === 'recurring' ?
+  keptEvents.filter((e) => e.start || e.day_of_week && e.start_time && period.start && period.end) :
+  keptEvents.filter((e) => e.start);
 
   function handleParsed(rawEvents, fileUrl) {
     if (fileUrl) setLastFileUrl(fileUrl);
@@ -89,13 +89,13 @@ export default function Home() {
       setEvents(rawEvents.map(normalizeEvent));
       toast({
         title: 'Re-extracted',
-        description: `${rawEvents.length} event${rawEvents.length === 1 ? '' : 's'} re-read from your file.`,
+        description: `${rawEvents.length} event${rawEvents.length === 1 ? '' : 's'} re-read from your file.`
       });
     } catch (err) {
       toast({
         title: 'Regenerate failed',
         description: err?.message || 'Could not re-read the file.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setIsRegenerating(false);
@@ -136,7 +136,7 @@ export default function Home() {
               <CalendarClock className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-semibold text-foreground leading-none">Timetable Parser</h1>
+              <h1 className="text-base font-semibold text-foreground leading-none">TimeEx</h1>
               <p className="text-xs text-muted-foreground mt-0.5">PDF / image → Apple Calendar</p>
             </div>
           </div>
@@ -202,27 +202,27 @@ export default function Home() {
                 </p>
               </div>
               <button
-                onClick={handleGenerate}
-                disabled={isGenerating || exportableEvents.length === 0}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              onClick={handleGenerate}
+              disabled={isGenerating || exportableEvents.length === 0}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <Download className="w-4 h-4" />
                 Generate ICS file
               </button>
             </div>
 
             <CriteriaBar
-              value={criteria}
-              onChange={setCriteria}
-              action={
-                <button
-                  onClick={regenerate}
-                  disabled={isRegenerating || !lastFileUrl}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            value={criteria}
+            onChange={setCriteria}
+            action={
+            <button
+              onClick={regenerate}
+              disabled={isRegenerating || !lastFileUrl}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   <RefreshCw className={['w-4 h-4', isRegenerating ? 'animate-spin' : ''].join(' ')} />
                   {isRegenerating ? 'Regenerating…' : 'Regenerate'}
                 </button>
-              }
-            />
+            } />
+          
 
             {events.length === 0 ?
           <div className="rounded-2xl border border-border bg-card p-10 text-center">
