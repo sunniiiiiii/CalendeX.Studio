@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
 import FileUpload from '@/components/FileUpload';
 import EventBlock from '@/components/EventBlock';
+import CalendarPeriod from '@/components/CalendarPeriod';
 import { buildIcs, downloadIcs } from '@/lib/ics';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -11,6 +12,9 @@ function normalizeEvent(ev, index) {
     title: ev.title || '',
     start: ev.start || '',
     end: ev.end || '',
+    day_of_week: ev.day_of_week || '',
+    start_time: ev.start_time || '',
+    end_time: ev.end_time || '',
     location: ev.location || '',
     notes: ev.notes || '',
     included: true,
@@ -21,11 +25,16 @@ function normalizeEvent(ev, index) {
 export default function Home() {
   const { toast } = useToast();
   const [events, setEvents] = useState([]);
+  const [period, setPeriod] = useState({ start: '', end: '' });
   const [hasParsed, setHasParsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const keptEvents = events.filter((e) => e.included);
-  const exportableEvents = keptEvents.filter((e) => e.start);
+  const hasRecurring = keptEvents.some((e) => !e.start && e.day_of_week);
+  const hasDetailed = keptEvents.some((e) => e.start);
+  const exportableEvents = keptEvents.filter(
+    (e) => e.start || (e.day_of_week && e.start_time && period.start && period.end)
+  );
 
   function handleParsed(rawEvents) {
     if (!rawEvents || rawEvents.length === 0) {
@@ -61,6 +70,7 @@ export default function Home() {
 
   function reset() {
     setEvents([]);
+    setPeriod({ start: '', end: '' });
     setHasParsed(false);
   }
 
@@ -75,7 +85,7 @@ export default function Home() {
     }
     setIsGenerating(true);
     try {
-      const ics = buildIcs(exportableEvents);
+      const ics = buildIcs(exportableEvents, period);
       downloadIcs('timetable.ics', ics);
       toast({
         title: 'ICS file ready',
@@ -168,6 +178,14 @@ export default function Home() {
                 Generate ICS file
               </button>
             </div>
+
+            <CalendarPeriod
+              period={period}
+              onChange={setPeriod}
+              hasRecurring={hasRecurring}
+              hasDetailed={hasDetailed}
+              eventCount={events.length}
+            />
 
             {events.length === 0 ?
           <div className="rounded-2xl border border-border bg-card p-10 text-center">

@@ -1,12 +1,15 @@
 import React from 'react';
-import { Trash2, MapPin, StickyNote, Clock, Type, Eye, EyeOff } from 'lucide-react';
+import { Trash2, MapPin, StickyNote, Clock, Type, Eye, EyeOff, CalendarDays, Timer } from 'lucide-react';
 
 const FIELD_META = {
-  title: { label: 'Title', icon: Type, type: 'text', placeholder: 'Event title' },
-  start: { label: 'Start', icon: Clock, type: 'datetime-local', placeholder: '' },
-  end: { label: 'End', icon: Clock, type: 'datetime-local', placeholder: '' },
-  location: { label: 'Location', icon: MapPin, type: 'text', placeholder: 'Location' },
-  notes: { label: 'Notes', icon: StickyNote, type: 'textarea', placeholder: 'Additional notes' }
+  title: { label: 'Title', icon: Type, type: 'text', placeholder: 'Event title', toggleable: true },
+  day_of_week: { label: 'Day(s)', icon: CalendarDays, type: 'text', placeholder: 'e.g. Monday or Mon/Wed/Fri', toggleable: false },
+  start_time: { label: 'Start time', icon: Timer, type: 'time', placeholder: '', toggleable: false },
+  end_time: { label: 'End time', icon: Timer, type: 'time', placeholder: '', toggleable: false },
+  start: { label: 'Start', icon: Clock, type: 'datetime-local', placeholder: '', toggleable: true },
+  end: { label: 'End', icon: Clock, type: 'datetime-local', placeholder: '', toggleable: true },
+  location: { label: 'Location', icon: MapPin, type: 'text', placeholder: 'Location', toggleable: true },
+  notes: { label: 'Notes', icon: StickyNote, type: 'textarea', placeholder: 'Additional notes', toggleable: true }
 };
 
 function toInputValue(value, type) {
@@ -14,7 +17,6 @@ function toInputValue(value, type) {
   if (type === 'datetime-local') {
     const d = new Date(value);
     if (isNaN(d.getTime())) return '';
-    const pad = (n) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
   return String(value);
@@ -30,8 +32,13 @@ function fromInputValue(value, type) {
   return value;
 }
 
+function pad(n) {
+  return String(n).padStart(2, '0');
+}
+
 export default function EventBlock({ event, index, onChange, onToggleInclude, onToggleField, onRemove }) {
   const meta = FIELD_META;
+  const isRecurring = !event.start && !!event.day_of_week;
 
   return (
     <div
@@ -49,6 +56,12 @@ export default function EventBlock({ event, index, onChange, onToggleInclude, on
           <span className="text-sm font-medium text-foreground truncate">
             {event.title || 'Untitled event'}
           </span>
+          {isRecurring && (
+            <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-medium">
+              <CalendarDays className="w-3 h-3" />
+              Weekly
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
@@ -80,6 +93,9 @@ export default function EventBlock({ event, index, onChange, onToggleInclude, on
         {Object.entries(meta).map(([key, info]) => {
           const Icon = info.icon;
           const isIncluded = event.includeFields?.[key] !== false;
+          // Hide concrete start/end fields for recurring weekly events (they're computed from the period).
+          if (isRecurring && (key === 'start' || key === 'end')) return null;
+
           return (
             <div key={key} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-2 sm:gap-3 sm:items-start">
               <div className="flex items-center gap-2 sm:pt-2.5 text-muted-foreground">
@@ -105,28 +121,32 @@ export default function EventBlock({ event, index, onChange, onToggleInclude, on
                 />
               )}
 
-              <button
-                type="button"
-                onClick={() => onToggleField(key)}
-                title={isIncluded ? `Include ${info.label} in ICS` : `Exclude ${info.label} from ICS`}
-                className={[
-                  'inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors sm:self-start sm:mt-0.5',
-                  isIncluded
-                    ? 'bg-primary/10 text-primary hover:bg-primary/15'
-                    : 'bg-muted/60 text-muted-foreground hover:bg-muted'
-                ].join(' ')}
-              >
-                {isIncluded ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">{isIncluded ? 'In ICS' : 'Excluded'}</span>
-              </button>
+              {info.toggleable ? (
+                <button
+                  type="button"
+                  onClick={() => onToggleField(key)}
+                  title={isIncluded ? `Include ${info.label} in ICS` : `Exclude ${info.label} from ICS`}
+                  className={[
+                    'inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors sm:self-start sm:mt-0.5',
+                    isIncluded
+                      ? 'bg-primary/10 text-primary hover:bg-primary/15'
+                      : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+                  ].join(' ')}
+                >
+                  {isIncluded ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{isIncluded ? 'In ICS' : 'Excluded'}</span>
+                </button>
+              ) : (
+                <div className="hidden sm:block sm:w-[88px]" />
+              )}
             </div>
           );
         })}
 
-        {!event.start && (
+        {!event.start && !event.day_of_week && (
           <p className="text-xs text-amber-600 dark:text-amber-500/90 flex items-center gap-1.5 pt-1">
             <Clock className="w-3.5 h-3.5" />
-            No start date/time was found in the source. Add one to include this event in the ICS file.
+            No date or day found in the source. Add a date, or a day + time with a calendar period, to include this event.
           </p>
         )}
       </div>

@@ -4,18 +4,22 @@ const PROMPT = `You are a meticulous timetable parser. You are given a file (PDF
 Your job: identify EVERY individual calendar event present in the document and extract its details faithfully.
 
 For each event extract:
-- title: the event title or subject (e.g. course name, meeting name).
-- start: the start date AND time as a single ISO 8601 datetime string (e.g. "2026-09-14T09:00:00") ONLY if the document gives an explicit, unambiguous date and time. If the document only states a day-of-week and a time (with no concrete calendar date), or if the date/time is unclear, leave this field as an empty string "".
-- end: the end date AND time as an ISO 8601 datetime string, using the SAME rules as "start". Leave empty if not explicitly determinable.
+- title: the event title or subject (e.g. course name, meeting name). Preserve original wording.
+- start: the start as an ISO 8601 datetime string (e.g. "2026-09-14T09:00:00"). Populate this whenever a concrete calendar date can be found for the event — whether it appears in the event's own row, a date column, OR in the notes / remarks / comments / footnote areas. If a date is present but no time is given, use T00:00:00. Only leave this as an empty string "" when NO concrete date can be found anywhere for the event (e.g. a purely weekly recurring class with no calendar date).
+- end: the end as an ISO 8601 datetime string, using the SAME rules as "start". If an end date is present but no end time, use T23:59:59. For single-day events with no explicit end, use the same date as start. Leave empty only when no end date/time can be found anywhere.
+- day_of_week: the day of the week as written (e.g. "Monday", "Tue", "Mon/Wed/Fri"). Empty string if none. For multi-day patterns keep them all (e.g. "Mon/Wed/Fri").
+- start_time: the start time in 24h HH:MM format (e.g. "09:00") when a time is given. Empty string if none.
+- end_time: the end time in 24h HH:MM format (e.g. "10:30") when a time is given. Empty string if none.
 - location: the room / building / venue / address as written. Empty string if none.
-- notes: any additional descriptive details from the source for this event. If the document gives a day-of-week and time but no concrete date, put that schedule information here (e.g. "Every Monday 09:00–10:00"). Empty string if none.
+- notes: any additional descriptive details from the source for this event. IMPORTANT: scan the notes / remarks / comments / footnote areas for date and time information FIRST — if a concrete date or time appears there, use it to fill start/end/start_time/end_time, and only put the remaining descriptive text here. Empty string if none.
 
 STRICT RULES:
 - Do NOT invent, guess, or fabricate any data. Only extract what is actually written in the document.
 - Preserve original wording for title, location, and notes.
 - If a field is missing or unclear, leave it as an empty string — never fill it with assumptions.
 - Each distinct event becomes one entry. Do not merge events. If the same subject repeats on different days/times, each occurrence is its own entry.
-- Ignore page furniture (headers, footers, page numbers, logos) unless they carry event information.`;
+- Ignore page furniture (headers, footers, page numbers, logos) unless they carry event information.
+- Read ALL pages of the PDF. Do not stop after the first page.`;
 
 const SCHEMA = {
   type: 'object',
@@ -28,10 +32,13 @@ const SCHEMA = {
           title: { type: 'string' },
           start: { type: 'string' },
           end: { type: 'string' },
+          day_of_week: { type: 'string' },
+          start_time: { type: 'string' },
+          end_time: { type: 'string' },
           location: { type: 'string' },
           notes: { type: 'string' }
         },
-        required: ['title', 'start', 'end', 'location', 'notes']
+        required: ['title', 'start', 'end', 'day_of_week', 'start_time', 'end_time', 'location', 'notes']
       }
     }
   },
@@ -50,7 +57,8 @@ export default async function(req: Request): Promise<Response> {
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: PROMPT,
       file_urls: [fileUrl],
-      response_json_schema: SCHEMA
+      response_json_schema: SCHEMA,
+      model: 'gemini_3_8_flash'
     });
 
     const events = Array.isArray(result?.events) ? result.events : [];
