@@ -43,16 +43,16 @@ export default function Home() {
   }
 
   function updateField(id, field, value) {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)));
+    setEvents((prev) => prev.map((e) => e.id === id ? { ...e, [field]: value } : e));
   }
   function toggleInclude(id) {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, included: !e.included } : e)));
+    setEvents((prev) => prev.map((e) => e.id === id ? { ...e, included: !e.included } : e));
   }
   function toggleField(id, field) {
     setEvents((prev) =>
-      prev.map((e) =>
-        e.id === id ? { ...e, includeFields: { ...e.includeFields, [field]: !e.includeFields[field] } } : e
-      )
+    prev.map((e) =>
+    e.id === id ? { ...e, includeFields: { ...e.includeFields, [field]: !e.includeFields[field] } } : e
+    )
     );
   }
   function removeEvent(id) {
@@ -98,33 +98,33 @@ export default function Home() {
               <CalendarClock className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-semibold text-foreground leading-none">Timetable Parser</h1>
+              <h1 className="text-base font-semibold text-foreground leading-none">TimeEx</h1>
               <p className="text-xs text-muted-foreground mt-0.5">PDF / image → Apple Calendar</p>
             </div>
           </div>
-          {hasParsed && (
-            <button
-              onClick={reset}
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
+          {hasParsed &&
+          <button
+            onClick={reset}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            
               <RotateCcw className="w-4 h-4" />
               <span className="hidden sm:inline">Start over</span>
             </button>
-          )}
+          }
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-5 sm:px-6 py-8 sm:py-12">
-        {!hasParsed ? (
-          <div className="space-y-8">
+        {!hasParsed ?
+        <div className="space-y-8">
             <div className="text-center space-y-3">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
                 <Sparkles className="w-3.5 h-3.5" />
                 AI-powered extraction
               </div>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-                Turn any timetable into calendar events
-              </h2>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">Turn Any Timetable Into alendar events
+
+            </h2>
               <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
                 Upload a class schedule, meeting plan, or any timetable as a PDF or image. Each event becomes an
                 editable block you can review, trim, and export as an ICS file for Apple Calendar.
@@ -135,20 +135,20 @@ export default function Home() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
               {[
-                { icon: Sparkles, title: 'Extract', text: 'AI reads every event from your file.' },
-                { icon: CheckCircle2, title: 'Review', text: 'Edit, keep, or discard each block.' },
-                { icon: Download, title: 'Export', text: 'Download a clean ICS for Apple Calendar.' }
-              ].map((s) => (
-                <div key={s.title} className="rounded-xl border border-border/60 bg-card p-4">
+            { icon: Sparkles, title: 'Extract', text: 'AI reads every event from your file.' },
+            { icon: CheckCircle2, title: 'Review', text: 'Edit, keep, or discard each block.' },
+            { icon: Download, title: 'Export', text: 'Download a clean ICS for Apple Calendar.' }].
+            map((s) =>
+            <div key={s.title} className="rounded-xl border border-border/60 bg-card p-4">
                   <s.icon className="w-4 h-4 text-primary mb-2" />
                   <p className="font-medium text-foreground">{s.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{s.text}</p>
                 </div>
-              ))}
+            )}
             </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
+          </div> :
+
+        <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
                 <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
@@ -160,65 +160,65 @@ export default function Home() {
                 </p>
               </div>
               <button
-                onClick={handleGenerate}
-                disabled={isGenerating || exportableEvents.length === 0}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              onClick={handleGenerate}
+              disabled={isGenerating || exportableEvents.length === 0}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              
                 <Download className="w-4 h-4" />
                 Generate ICS file
               </button>
             </div>
 
-            {events.length === 0 ? (
-              <div className="rounded-2xl border border-border bg-card p-10 text-center">
+            {events.length === 0 ?
+          <div className="rounded-2xl border border-border bg-card p-10 text-center">
                 <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground">
                   No events were detected. Try uploading a clearer or different file.
                 </p>
                 <button
-                  onClick={reset}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                >
+              onClick={reset}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+              
                   <RotateCcw className="w-4 h-4" /> Upload another file
                 </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {events.map((ev, i) => (
-                  <EventBlock
-                    key={ev.id}
-                    event={ev}
-                    index={i}
-                    onChange={(field, value) => updateField(ev.id, field, value)}
-                    onToggleInclude={() => toggleInclude(ev.id)}
-                    onToggleField={(field) => toggleField(ev.id, field)}
-                    onRemove={() => removeEvent(ev.id)}
-                  />
-                ))}
-              </div>
-            )}
+              </div> :
 
-            {events.length > 0 && (
-              <div className="sticky bottom-4 sm:bottom-6 z-10">
+          <div className="space-y-4">
+                {events.map((ev, i) =>
+            <EventBlock
+              key={ev.id}
+              event={ev}
+              index={i}
+              onChange={(field, value) => updateField(ev.id, field, value)}
+              onToggleInclude={() => toggleInclude(ev.id)}
+              onToggleField={(field) => toggleField(ev.id, field)}
+              onRemove={() => removeEvent(ev.id)} />
+
+            )}
+              </div>
+          }
+
+            {events.length > 0 &&
+          <div className="sticky bottom-4 sm:bottom-6 z-10">
                 <div className="rounded-2xl border border-border bg-background/90 backdrop-blur shadow-lg px-5 py-4 flex items-center justify-between gap-3">
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">{exportableEvents.length}</span> event
                     {exportableEvents.length === 1 ? '' : 's'} ready
                   </p>
                   <button
-                    onClick={handleGenerate}
-                    disabled={isGenerating || exportableEvents.length === 0}
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                onClick={handleGenerate}
+                disabled={isGenerating || exportableEvents.length === 0}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                
                     <Download className="w-4 h-4" />
                     Generate ICS file
                   </button>
                 </div>
               </div>
-            )}
+          }
           </div>
-        )}
+        }
       </main>
-    </div>
-  );
+    </div>);
+
 }
