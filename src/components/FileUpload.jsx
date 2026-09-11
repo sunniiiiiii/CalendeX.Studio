@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { UploadCloud, Loader2, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-export default function FileUpload({ onParsed, onError }) {
+export default function FileUpload({ onParsed, onError, criteria }) {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isWorking, setIsWorking] = useState(false);
@@ -23,7 +23,7 @@ export default function FileUpload({ onParsed, onError }) {
     try {
       const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
       setStage('Reading timetable with AI…');
-      const res = await base44.functions.invoke('parseTimetable', { file_url });
+      const res = await base44.functions.invoke('parseTimetable', { file_url, criteria });
       onParsed?.(res.data?.events || [], file_url);
     } catch (err) {
       onError?.(err?.message || 'Failed to read the timetable. Please try again.');

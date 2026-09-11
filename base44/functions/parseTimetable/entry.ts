@@ -55,9 +55,13 @@ export default async function(req: Request): Promise<Response> {
     if (!fileUrl) {
       return Response.json({ error: 'file_url is required' }, { status: 400 });
     }
+    const criteria = typeof body?.criteria === 'string' ? body.criteria.trim() : '';
+    const prompt = criteria
+      ? `${PROMPT}\n\nADDITIONAL USER CRITERIA — follow these strictly when selecting and filtering events. Omit any event that violates them. When two subjects share the same time slot, keep only the one the user says they take. When the user asks for a specific teaching week (e.g. "week 1 only"), include only the occurrences that fall in that week and set their concrete dates accordingly. Apply these criteria in addition to the strict rules above:\n${criteria}`
+      : PROMPT;
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: PROMPT,
+      prompt,
       file_urls: [fileUrl],
       response_json_schema: SCHEMA,
       model: 'gemini_3_flash'

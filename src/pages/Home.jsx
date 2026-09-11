@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import FileUpload from '@/components/FileUpload';
 import EventBlock from '@/components/EventBlock';
 import CalendarModeChooser from '@/components/CalendarModeChooser';
+import CriteriaBar from '@/components/CriteriaBar';
 import { buildIcs, downloadIcs } from '@/lib/ics';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -28,6 +29,7 @@ export default function Home() {
   const [events, setEvents] = useState([]);
   const [mode, setMode] = useState('specific');
   const [period, setPeriod] = useState({ start: '', end: '' });
+  const [criteria, setCriteria] = useState('');
   const [hasParsed, setHasParsed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -82,7 +84,7 @@ export default function Home() {
     if (!lastFileUrl || isRegenerating) return;
     setIsRegenerating(true);
     try {
-      const res = await base44.functions.invoke('parseTimetable', { file_url: lastFileUrl });
+      const res = await base44.functions.invoke('parseTimetable', { file_url: lastFileUrl, criteria });
       const rawEvents = res.data?.events || [];
       setEvents(rawEvents.map(normalizeEvent));
       toast({
@@ -169,7 +171,9 @@ export default function Home() {
 
             <CalendarModeChooser mode={mode} period={period} onModeChange={setMode} onPeriodChange={setPeriod} />
 
-            <FileUpload onParsed={handleParsed} onError={(msg) => toast({ title: 'Upload error', description: msg, variant: 'destructive' })} />
+            <CriteriaBar value={criteria} onChange={setCriteria} />
+
+            <FileUpload onParsed={handleParsed} onError={(msg) => toast({ title: 'Upload error', description: msg, variant: 'destructive' })} criteria={criteria} />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
               {[
@@ -197,23 +201,28 @@ export default function Home() {
                   {exportableEvents.length} ready to export
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating || exportableEvents.length === 0}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <Download className="w-4 h-4" />
+                Generate ICS file
+              </button>
+            </div>
+
+            <CriteriaBar
+              value={criteria}
+              onChange={setCriteria}
+              action={
                 <button
                   onClick={regenerate}
                   disabled={isRegenerating || !lastFileUrl}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   <RefreshCw className={['w-4 h-4', isRegenerating ? 'animate-spin' : ''].join(' ')} />
-                  <span className="hidden sm:inline">{isRegenerating ? 'Regenerating…' : 'Regenerate'}</span>
+                  {isRegenerating ? 'Regenerating…' : 'Regenerate'}
                 </button>
-                <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating || exportableEvents.length === 0}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  <Download className="w-4 h-4" />
-                  Generate ICS file
-                </button>
-              </div>
-            </div>
+              }
+            />
 
             {events.length === 0 ?
           <div className="rounded-2xl border border-border bg-card p-10 text-center">
