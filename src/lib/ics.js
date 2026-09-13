@@ -50,6 +50,12 @@ function isUtcIso(value) {
   return typeof value === 'string' && (value.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(value));
 }
 
+function dateOnly(value) {
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return null;
+  return d.getFullYear().toString() + pad(d.getMonth() + 1) + pad(d.getDate());
+}
+
 // Parse a day-of-week string into ordered BYDAY codes (MO,TU,WE,TH,FR,SA,SU).
 // Handles "Monday", "Mon/Wed/Fri", "MWF", "TR", "Tue & Thu", etc.
 const WEEKDAY_ORDER = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
@@ -118,13 +124,28 @@ export function buildIcs(events, period) {
     let dtstart, dtend, rrule;
 
     if (hasConcreteStart) {
-      const start = formatDT(ev.start);
-      if (!start) continue;
-      const useUtc = isUtcIso(ev.start) || (ev.end && isUtcIso(ev.end));
-      dtstart = useUtc ? start.utc : start.floating;
-      if (fields.end !== false && ev.end) {
-        const end = formatDT(ev.end);
-        if (end) dtend = useUtc ? end.utc : end.floating;
+      if (ev.all_day) {
+        const ds = dateOnly(ev.start);
+        if (!ds) continue;
+        dtstart = ds;
+        let endD;
+        if (fields.end !== false && ev.end) {
+          endD = new Date(ev.end);
+        } else {
+          endD = new Date(ev.start);
+          endD.setDate(endD.getDate() + 1);
+        }
+        const de = dateOnly(endD);
+        if (de) dtend = de;
+      } else {
+        const start = formatDT(ev.start);
+        if (!start) continue;
+        const useUtc = isUtcIso(ev.start) || (ev.end && isUtcIso(ev.end));
+        dtstart = useUtc ? start.utc : start.floating;
+        if (fields.end !== false && ev.end) {
+          const end = formatDT(ev.end);
+          if (end) dtend = useUtc ? end.utc : end.floating;
+        }
       }
     } else if (ev.day_of_week && ev.start_time && period && period.start && period.end) {
       const byDays = parseByDay(ev.day_of_week);
@@ -147,9 +168,11 @@ export function buildIcs(events, period) {
     lines.push('BEGIN:VEVENT');
     lines.push(`UID:timetable-${counter}-${dtstamp}@base44.app`);
     lines.push(`DTSTAMP:${dtstamp}`);
-    lines.push(`DTSTART${isUtcIso(ev.start) ? '' : ';VALUE=DATE-TIME'}:${dtstart}`);
+    const startParam = ev.all_day ? ';VALUE=DATE' : (isUtcIso(ev.start) ? '' : ';VALUE=DATE-TIME');
+    lines.push(`DTSTART${startParam}:${dtstart}`);
     if (dtend) {
-      lines.push(`DTEND${isUtcIso(ev.start) || isUtcIso(ev.end) ? '' : ';VALUE=DATE-TIME'}:${dtend}`);
+      const endParam = ev.all_day ? ';VALUE=DATE' : (isUtcIso(ev.start) || isUtcIso(ev.end) ? '' : ';VALUE=DATE-TIME');
+      lines.push(`DTEND${endParam}:${dtend}`);
     }
     if (rrule) lines.push(`RRULE:${rrule}`);
     if (fields.title !== false && ev.title) lines.push(foldLine(`SUMMARY:${escapeText(ev.title)}`));
