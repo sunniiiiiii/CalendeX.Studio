@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw, Archive } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import FileUpload from '@/components/FileUpload';
 import EventBlock from '@/components/EventBlock';
@@ -35,6 +36,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [lastFileUrl, setLastFileUrl] = useState('');
+  const [savedToLibrary, setSavedToLibrary] = useState(false);
 
   const keptEvents = events.filter((e) => e.included);
   const exportableEvents = mode === 'recurring' ?
@@ -79,6 +81,31 @@ export default function Home() {
     setPeriod({ start: '', end: '' });
     setLastFileUrl('');
     setHasParsed(false);
+    setSavedToLibrary(false);
+  }
+
+  async function saveToLibrary() {
+    if (keptEvents.length === 0 || savedToLibrary) return;
+    try {
+      const sourceName = lastFileUrl ? decodeURIComponent(lastFileUrl.split('/').pop()) : 'Imported schedule';
+      const records = keptEvents.map((e) => ({
+        title: e.title,
+        start: e.start,
+        end: e.end,
+        day_of_week: e.day_of_week,
+        start_time: e.start_time,
+        end_time: e.end_time,
+        location: e.location,
+        notes: e.notes,
+        source_file_name: sourceName,
+        mode
+      }));
+      await base44.entities.SavedEvent.bulkCreate(records);
+      setSavedToLibrary(true);
+      toast({ title: 'Saved to library', description: `${records.length} event${records.length === 1 ? '' : 's'} saved to your library.` });
+    } catch (err) {
+      toast({ title: 'Save failed', description: err?.message, variant: 'destructive' });
+    }
   }
 
   async function regenerate() {
@@ -141,6 +168,13 @@ export default function Home() {
               <p className="text-xs text-muted-foreground mt-0.5">PDF / image → Apple Calendar</p>
             </div>
           </div>
+          <Link
+            to="/saved-events"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Archive className="w-4 h-4" />
+            <span className="hidden sm:inline">Library</span>
+          </Link>
           {hasParsed &&
           <button
             onClick={reset}
@@ -204,13 +238,22 @@ export default function Home() {
                   {exportableEvents.length} ready to export
                 </p>
               </div>
-              <button
-              onClick={handleGenerate}
-              disabled={isGenerating || exportableEvents.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <Download className="w-4 h-4" />
-                Generate ICS file
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={saveToLibrary}
+                  disabled={savedToLibrary || keptEvents.length === 0}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Archive className="w-4 h-4" />
+                  {savedToLibrary ? 'Saved' : 'Save to library'}
+                </button>
+                <button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || exportableEvents.length === 0}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Download className="w-4 h-4" />
+                  Generate ICS file
+                </button>
+              </div>
             </div>
 
             <CriteriaBar
