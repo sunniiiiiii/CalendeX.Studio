@@ -75,7 +75,7 @@ export default function About() {
           <div className="rounded-xl border border-border bg-card p-4">
             <ShieldCheck className="w-4 h-4 text-primary mb-2" />
             <p className="text-sm font-medium text-foreground">Who builds it</p>
-            <p className="text-xs text-muted-foreground mt-0.5">A high school student </p>
+            <p className="text-xs text-muted-foreground mt-0.5">A 16 year-old high school student in Nanjing, China. </p>
           </div>
         </div>
 
