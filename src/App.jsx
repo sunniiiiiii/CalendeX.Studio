@@ -11,6 +11,8 @@ import SavedEvents from '@/pages/SavedEvents';
 import History from '@/pages/History';
 import Help from '@/pages/Help';
 import Feedback from '@/pages/Feedback';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -45,6 +47,8 @@ const AuthenticatedApp = () => {
       <Route path="/history" element={<History />} />
       <Route path="/help" element={<Help />} />
       <Route path="/feedback" element={<Feedback />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

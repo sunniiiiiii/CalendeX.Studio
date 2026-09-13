@@ -7,6 +7,7 @@ import EventBlock from '@/components/EventBlock';
 import CalendarModeChooser from '@/components/CalendarModeChooser';
 import CriteriaBar from '@/components/CriteriaBar';
 import CurrentTimeBar from '@/components/CurrentTimeBar';
+import Footer from '@/components/Footer';
 import { buildIcs, downloadIcs } from '@/lib/ics';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -342,6 +343,6 @@ export default function Home() {
           </div>
         }
       </main>
-    </div>);
-
-}
+      <Footer />
+      </div>);
+      }

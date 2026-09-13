@@ -5,6 +5,9 @@
     "type": {
       "type": "string"
     },
+    "name": {
+      "type": "string"
+    },
     "file_name": {
       "type": "string"
     },
