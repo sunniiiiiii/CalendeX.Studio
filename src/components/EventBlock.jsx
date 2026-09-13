@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, MapPin, StickyNote, Clock, Type, Eye, EyeOff, CalendarDays, Timer, Sun } from 'lucide-react';
+import { Trash2, MapPin, StickyNote, Clock, Type, Eye, EyeOff, CalendarDays, Timer } from 'lucide-react';
 
 const FIELD_META = {
   title: { label: 'Title', icon: Type, type: 'text', placeholder: 'Event title', toggleable: true },
@@ -14,12 +14,10 @@ const FIELD_META = {
 
 function toInputValue(value, type) {
   if (!value) return '';
-  if (type === 'datetime-local' || type === 'date') {
+  if (type === 'datetime-local') {
     const d = new Date(value);
     if (isNaN(d.getTime())) return '';
-    const ymd = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    if (type === 'date') return ymd;
-    return `${ymd}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
   return String(value);
 }
@@ -30,9 +28,6 @@ function fromInputValue(value, type) {
     const d = new Date(value);
     if (isNaN(d.getTime())) return '';
     return d.toISOString();
-  }
-  if (type === 'date') {
-    return value; // keep date-only YYYY-MM-DD
   }
   return value;
 }
@@ -65,12 +60,6 @@ export default function EventBlock({ event, index, onChange, onToggleInclude, on
             <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-medium">
               <CalendarDays className="w-3 h-3" />
               Weekly
-            </span>
-          )}
-          {event.all_day && (
-            <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[11px] font-medium dark:bg-amber-500/15 dark:text-amber-400">
-              <Sun className="w-3 h-3" />
-              All day
             </span>
           )}
         </div>
@@ -106,10 +95,6 @@ export default function EventBlock({ event, index, onChange, onToggleInclude, on
           const isIncluded = event.includeFields?.[key] !== false;
           // Hide concrete start/end fields for recurring weekly events (they're computed from the period).
           if (isRecurring && (key === 'start' || key === 'end')) return null;
-          // All-day events have no time-of-day fields.
-          if (event.all_day && (key === 'start_time' || key === 'end_time')) return null;
-          // For all-day events, render start/end as date-only inputs.
-          const inputType = (key === 'start' || key === 'end') && event.all_day ? 'date' : info.type;
 
           return (
             <div key={key} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-2 sm:gap-3 sm:items-start">
@@ -128,9 +113,9 @@ export default function EventBlock({ event, index, onChange, onToggleInclude, on
                 />
               ) : (
                 <input
-                  type={inputType}
-                  value={toInputValue(event[key], inputType)}
-                  onChange={(e) => onChange(key, fromInputValue(e.target.value, inputType))}
+                  type={info.type}
+                  value={toInputValue(event[key], info.type)}
+                  onChange={(e) => onChange(key, fromInputValue(e.target.value, info.type))}
                   placeholder={info.placeholder}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/40"
                 />

@@ -15,7 +15,6 @@ function normalizeEvent(ev, index) {
     title: ev.title || '',
     start: ev.start || '',
     end: ev.end || '',
-    all_day: ev.all_day === true,
     day_of_week: ev.day_of_week || '',
     start_time: ev.start_time || '',
     end_time: ev.end_time || '',
