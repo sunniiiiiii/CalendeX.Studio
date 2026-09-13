@@ -8,6 +8,8 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Home from '@/pages/Home';
 import SavedEvents from '@/pages/SavedEvents';
+import History from '@/pages/History';
+import Help from '@/pages/Help';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -39,6 +41,8 @@ const AuthenticatedApp = () => {
       {/* Add your page Route elements here */}
       <Route path="/" element={<Home />} />
       <Route path="/saved-events" element={<SavedEvents />} />
+      <Route path="/history" element={<History />} />
+      <Route path="/help" element={<Help />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

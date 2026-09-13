@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw, Archive } from 'lucide-react';
+import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw, Archive, History as HistoryIcon, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import FileUpload from '@/components/FileUpload';
@@ -43,8 +43,20 @@ export default function Home() {
   keptEvents.filter((e) => e.start || e.day_of_week && e.start_time && period.start && period.end) :
   keptEvents.filter((e) => e.start);
 
-  function handleParsed(rawEvents, fileUrl) {
+  async function handleParsed(rawEvents, fileUrl) {
     if (fileUrl) setLastFileUrl(fileUrl);
+    const fileName = fileUrl ? decodeURIComponent(fileUrl.split('/').pop()) : 'Imported file';
+    const status = rawEvents && rawEvents.length > 0 ? 'success' : 'no_events';
+    try {
+      await base44.entities.ExtractionHistory.create({
+        file_name: fileName,
+        file_url: fileUrl || '',
+        status,
+        event_count: rawEvents?.length || 0,
+        mode,
+        criteria
+      });
+    } catch {}
     if (!rawEvents || rawEvents.length === 0) {
       toast({ title: 'No events found', description: 'No timetable events could be detected in the file.' });
       setHasParsed(true);
@@ -168,22 +180,28 @@ export default function Home() {
               <p className="text-xs text-muted-foreground mt-0.5">PDF / image → Apple Calendar</p>
             </div>
           </div>
-          <Link
-            to="/saved-events"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Archive className="w-4 h-4" />
-            <span className="hidden sm:inline">Library</span>
-          </Link>
-          {hasParsed &&
-          <button
-            onClick={reset}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            
+          <div className="flex items-center gap-1">
+            <Link to="/saved-events" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <Archive className="w-4 h-4" />
+              <span className="hidden sm:inline">Library</span>
+            </Link>
+            <Link to="/history" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <HistoryIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">History</span>
+            </Link>
+            <Link to="/help" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <HelpCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Help</span>
+            </Link>
+            {hasParsed &&
+            <button
+              onClick={reset}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
               <RotateCcw className="w-4 h-4" />
               <span className="hidden sm:inline">Start over</span>
             </button>
-          }
+            }
+          </div>
         </div>
       </header>
 

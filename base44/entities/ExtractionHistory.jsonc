@@ -1,0 +1,31 @@
+{
+  "name": "ExtractionHistory",
+  "type": "object",
+  "properties": {
+    "file_name": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "event_count": {
+      "type": "number"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "criteria": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_name",
+    "status"
+  ]
+}

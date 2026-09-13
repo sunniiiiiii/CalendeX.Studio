@@ -20,12 +20,23 @@ export default function FileUpload({ onParsed, onError, criteria }) {
     setFileName(file.name);
     setIsWorking(true);
     setStage('Uploading file…');
+    let file_url = '';
     try {
-      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+      const uploaded = await base44.integrations.Core.UploadPublicFile({ file });
+      file_url = uploaded.file_url;
       setStage('Reading timetable with AI…');
       const res = await base44.functions.invoke('parseTimetable', { file_url, criteria });
       onParsed?.(res.data?.events || [], file_url);
     } catch (err) {
+      try {
+        await base44.entities.ExtractionHistory.create({
+          file_name: file.name,
+          file_url,
+          status: 'failed',
+          event_count: 0,
+          error_message: err?.message || 'Failed to read the timetable'
+        });
+      } catch {}
       onError?.(err?.message || 'Failed to read the timetable. Please try again.');
     } finally {
       setIsWorking(false);
