@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw, Archive, History as HistoryIcon, HelpCircle } from 'lucide-react';
+import { CalendarClock, Sparkles, Download, RotateCcw, CheckCircle2, AlertCircle, RefreshCw, Archive, History as HistoryIcon, HelpCircle, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import FileUpload from '@/components/FileUpload';
@@ -192,6 +192,10 @@ export default function Home() {
             <Link to="/help" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
               <HelpCircle className="w-4 h-4" />
               <span className="hidden sm:inline">Help</span>
+            </Link>
+            <Link to="/feedback" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <MessageSquare className="w-4 h-4" />
+              <span className="hidden sm:inline">Feedback</span>
             </Link>
             {hasParsed &&
             <button
