@@ -37,8 +37,7 @@ export default function About() {
           <p>
             CalendeX is an AI-powered tool that turns any timetable — a class schedule, meeting plan, exam roster, or
             shift chart — into clean, editable calendar events. Upload a PDF or image, and the app reads every event
-            from the document, translating foreign-language text into English and converting Chinese calendar dates
-            such as <span className="font-medium text-foreground">九月八日</span> into concrete ISO dates. Each
+            from the document, translating foreign-language text into English. Each
             extracted event becomes an independent block you can review, edit, keep, or discard before exporting.
           </p>
           <p>
