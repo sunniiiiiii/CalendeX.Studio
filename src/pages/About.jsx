@@ -75,7 +75,7 @@ export default function About() {
           <div className="rounded-xl border border-border bg-card p-4">
             <ShieldCheck className="w-4 h-4 text-primary mb-2" />
             <p className="text-sm font-medium text-foreground">Who builds it</p>
-            <p className="text-xs text-muted-foreground mt-0.5">An independent team, built on the Base44 platform.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">A High Schbuilt on the Base44 platfor</p>
           </div>
         </div>
 
@@ -85,6 +85,6 @@ export default function About() {
       </main>
 
       <Footer />
-    </div>
-  );
+    </div>);
+
 }
