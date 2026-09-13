@@ -1,11 +1,9 @@
 import React from 'react';
-import { Trash2, MapPin, StickyNote, Clock, Type, Eye, EyeOff, CalendarDays, Timer } from 'lucide-react';
+import { Trash2, MapPin, StickyNote, Clock, Type, Eye, EyeOff, CalendarDays } from 'lucide-react';
 
 const FIELD_META = {
   title: { label: 'Title', icon: Type, type: 'text', placeholder: 'Event title', toggleable: true },
   day_of_week: { label: 'Day(s)', icon: CalendarDays, type: 'text', placeholder: 'e.g. Monday or Mon/Wed/Fri', toggleable: false },
-  start_time: { label: 'Start time', icon: Timer, type: 'time', placeholder: '', toggleable: false },
-  end_time: { label: 'End time', icon: Timer, type: 'time', placeholder: '', toggleable: false },
   start: { label: 'Start', icon: Clock, type: 'datetime-local', placeholder: '', toggleable: true },
   end: { label: 'End', icon: Clock, type: 'datetime-local', placeholder: '', toggleable: true },
   location: { label: 'Location', icon: MapPin, type: 'text', placeholder: 'Location', toggleable: true },
